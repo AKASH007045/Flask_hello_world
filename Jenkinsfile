@@ -2,22 +2,22 @@ node {
       def app     
       stage('Clone repository') {               
              
-            checkout scm    
+            checkout scm 
       }     
-      stage('Build image') {         
+      stage('Build Application image') {         
        
-            app = docker.build("akash007045/flask_app:1.0")    
-       }     
-      stage('Test image') {           
-            app.inside {            
-             
-             sh 'echo "Tests passed"'        
-            }    
-        }     
-       stage('Push image') {
-                                                  docker.withRegistry('https://registry.hub.docker.com', 'git') {            
-       app.push("${env.BUILD_NUMBER}")            
-       app.push("latest")        
-              }    
-           }
-        }
+            sh 'make docker_build_Application'   
+       }
+      stage('Build logging image') {
+       
+            sh 'make docker_build_logstash'          
+       }
+      stage('Deploy on cluster') {
+
+            sh 'make kubernetes_deploy'      
+       }
+      stage('Deploy Serice') {
+
+            sh 'make kubernetes_service'
+       }      
+     }
