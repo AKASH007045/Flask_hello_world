@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-deployment
+  labels:
+    app: flask
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask
+  template:
+    metadata:
+      labels:
+        app: flask
+    spec:
+      containers:
+      - name: flask
+        image: akash007045/flask_app:1.0
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        resources:
+            requests:
+                memory: "64Mi"
+                cpu: "250m"
+            limits:
+                memory: "128Mi"
+                cpu: "500m"
+        command: ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]
+        volumeMounts:
+        - mountPath: /var/logging
+          name: app-logs
+        ports:
+        - containerPort: 8000
+      - name: sidecar-log
+        image: logstash:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "500Mi"
+          limits:
+            cpu: "500m"
+            memory: "800Mi"
+        volumeMounts:
+        - mountPath: /var/logging
+          name: app-logs
+      volumes:
+      - emptyDir: {}
+        name: app-logs

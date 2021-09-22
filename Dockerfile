@@ -7,4 +7,4 @@ RUN pip install gunicorn
 RUN pip install -r requirements.txt
 COPY . /app
 EXPOSE 8000 80
-CMD ["gunicorn app:app"]
+CMD ["gunicorn -b 0.0.0.0:8000 app:app"]
